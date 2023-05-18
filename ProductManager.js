@@ -91,9 +91,6 @@ class ProductManager{
 }
 
 
-const productManager = new ProductManager(path)
-
-
 //productManager.addProduct("producto prueba", "esto es un producto prueba", 200, "sin imagen", "abc123", 25);
 //productManager.updateProduct(0, { title: "Papas", description: "Papas fritas", price: 70, url: "google.com/fideos", code: 135, stock: 24 });
 //productManager.getProducts();

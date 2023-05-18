@@ -1,13 +1,25 @@
 const fs = require("fs");
+var path = 'database.json';
 
 class ProductManager{
-    
+
     constructor(path){
-        this.products = [];
-        this.id = 1;
+        this.products = this.loadDatabase(path);
+        this.id = (this.products[this.products.length-1] && this.products[this.products.length-1].id)?(this.products.length+1) : 1;
         this.path = path;
     }
 
+    loadDatabase(path) {
+        try {
+            const file = fs.readFileSync(path, 'utf-8');
+            return (JSON.parse(file));
+        } 
+        catch(error){
+            const file = fs.writeFileSync(path, '[]');
+            console.log(error);
+            return (JSON.parse(file));
+        } 
+    }
 
     addProduct(title, description, price, url, code, stock){
         if ( title && description && price && url && code && stock){
@@ -17,7 +29,8 @@ class ProductManager{
             }else{
                 let id = this.id++;
                 const newProduct = {id, title, description, price, url, code, stock};
-                this.products.push(newProduct);                
+                this.products.push(newProduct);
+                this.updateDB(this.products);
             }
         }else {
             console.error("Por favor completar todos los campos");
@@ -25,65 +38,62 @@ class ProductManager{
     }
 
     updateProduct(id, newObject) {
-        const productIndex = this.products.findIndex(product => product.id === id)
+        const productIndex = this.products.findIndex(product => product.id === id);
         if (productIndex === -1) {
-            return console.log("Producto no encontrado")
-        }
-        const updateProduct = {
-            ...this.products[productIndex],
-            ...newObject
-        }
-        
-        this.products[productIndex] = updateProduct;
-        console.log("Producto Actualizado");
-        
+            console.log("Producto no encontrado");
+        }else{
+            const updateProduct = {
+                ...this.products[productIndex],
+                ...newObject
+            }
+            
+            this.products[productIndex] = updateProduct;
+            console.log("Producto Actualizado");
+    
+            this.updateDB(this.products);
+        }    
     }
 
     deletProduct(id){
         const index = this.products.findIndex(product => product.id === id);
-        const deletID = this.products.splice(index, 1);
+        
         if (index === -1){
-            return console.log("No se encuentra ID");
+            console.log("No se encuentra ID");
         }else {
-            return deleteID;
+            this.products.splice(index, 1);
+            this.updateDB(this.products);
         }
     }
 
     getProducts(){
+        console.log(this.products);
         return this.products;
     }
 
     getProductByID(id){
         const productID = this.products.find(product => product.id === id);
         if (!productID){
-            return console.error("Not Found")
+            console.error("Not Found")
         }else {
-            return console.log("El producto solicitado es: ", productoID);
+            console.log("El producto solicitado es: ", productID);
         }
     }
 
-    updateDB(path){
-        
-        const db = this.products;
-
-        fs.writeFileSync(path, `${JSON.stringify(db, null, '')}`, (error) => {
-            if(error) return console.log(error);
-            fs.readFile(path, 'utf-8', (error, resultado)=>{
-                if(error) return console.log(error);
-                console.log(resultado)
-            } )
-        })
+    updateDB(newProduct){
+        fs.writeFile(this.path, JSON.stringify(newProduct), function() {console.log("updateo")});
     }
 }
 
-const productManager = new ProductManager()
 
-productManager.addProduct("Fideos", "con tuco", 20, "url", 123, 25);
-productManager.addProduct("Arroz", "con atun", 20, "url", 124, 25);
-productManager.addProduct("Milanesas", "con pure", 20, "url", 125, 25);
-productManager.addProduct("Hamburguesa", "con queso", 20, "url", 126, 25);
-productManager.updateProduct(4, { title: "Papas", description: "Papas fritas", price: 70, url: "google.com/fideos", code: 135, stock: 24 })
+const productManager = new ProductManager(path)
 
-productManager.updateDB('./database.json')
-productManager.getProducts();
-console.log(productManager);
+
+//productManager.addProduct("producto prueba", "esto es un producto prueba", 200, "sin imagen", "abc123", 25);
+
+//productManager.updateProduct(1, { title: "Papas", description: "Papas fritas", price: 70, url: "google.com/fideos", code: 135, stock: 24 });
+
+//productManager.getProducts();
+
+//productManager.getProductByID(1);
+
+//productManager.deletProduct(1);

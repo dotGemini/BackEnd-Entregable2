@@ -5,7 +5,7 @@ class ProductManager{
 
     constructor(path){
         this.products = this.loadDatabase(path);
-        this.id = (this.products[this.products.length-1] && this.products[this.products.length-1].id)?(this.products.length+1) : 1;
+        this.id = 1;
         this.path = path;
     }
 
@@ -25,7 +25,7 @@ class ProductManager{
         if ( title && description && price && url && code && stock){
             const verificationCode = this.products.some (product => product.code === code);
             if (verificationCode){
-                console.error("Codigo Repetido");
+                return "codigo Repetido";
             }else{
                 let id = this.id++;
                 const newProduct = {id, title, description, price, url, code, stock};
@@ -33,24 +33,23 @@ class ProductManager{
                 this.updateDB(this.products);
             }
         }else {
-            console.error("Por favor completar todos los campos");
+            return "Complete todos los campos";
         }
     }
 
     updateProduct(id, newObject) {
         const productIndex = this.products.findIndex(product => product.id === id);
         if (productIndex === -1) {
-            console.log("Producto no encontrado");
+            return "producto no encontrado"
         }else{
             const updateProduct = {
                 ...this.products[productIndex],
                 ...newObject
             }
             
-            this.products[productIndex] = updateProduct;
-            console.log("Producto Actualizado");
-    
+            this.products[productIndex] = updateProduct;    
             this.updateDB(this.products);
+            return
         }    
     }
 
@@ -58,29 +57,36 @@ class ProductManager{
         const index = this.products.findIndex(product => product.id === id);
         
         if (index === -1){
-            console.log("No se encuentra ID");
+            return "no se encuentra ID";
         }else {
             this.products.splice(index, 1);
+            this.id = id;
             this.updateDB(this.products);
+            return
         }
     }
 
     getProducts(){
-        console.log(this.products);
         return this.products;
     }
 
     getProductByID(id){
         const productID = this.products.find(product => product.id === id);
         if (!productID){
-            console.error("Not Found")
+            return "Not found"
         }else {
-            console.log("El producto solicitado es: ", productID);
+            return productID;
         }
     }
 
     updateDB(newProduct){
-        fs.writeFile(this.path, JSON.stringify(newProduct), function() {console.log("updateo")});
+        fs.writeFileSync(this.path, JSON.stringify(newProduct), function() {return});
+        return;
+    }
+
+    getID(){
+        const index = this.products.findIndex(product => product.id === -1);
+        return (index+2);
     }
 }
 
@@ -89,11 +95,7 @@ const productManager = new ProductManager(path)
 
 
 //productManager.addProduct("producto prueba", "esto es un producto prueba", 200, "sin imagen", "abc123", 25);
-
-//productManager.updateProduct(1, { title: "Papas", description: "Papas fritas", price: 70, url: "google.com/fideos", code: 135, stock: 24 });
-
+//productManager.updateProduct(0, { title: "Papas", description: "Papas fritas", price: 70, url: "google.com/fideos", code: 135, stock: 24 });
 //productManager.getProducts();
-
 //productManager.getProductByID(1);
-
 //productManager.deletProduct(1);
